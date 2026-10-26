@@ -45,3 +45,7 @@ python run_local.py samples/alb_health_check.log --json
 | `run_local.py` | Local runner: loads `.env`, diagnoses a log file and pretty-prints the result. |
 | `samples/` | Realistic incidents: ECS task OOM-killed, Python app missing an env var, failing ALB health check. |
 | `.env.example` | Template for `NEBIUS_API_KEY`, `NEBIUS_BASE_URL`, `NEBIUS_MODEL`. Copy it to `.env` (which is git-ignored). |
+
+## License
+
+[MIT](LICENSE)
