@@ -1,0 +1,74 @@
+=== ECS service events: prod-core / payments-api (oldest first) ===
+2026-10-26T09:13:40Z  (service payments-api) updated desired task definition to payments-api:42 (image payments-api:3.8.0, previous payments-api:41 / 3.7.2).
+2026-10-26T09:13:52Z  (service payments-api) has started 2 tasks: (task 0c1d5e9a7b3f4a2e8c6d9f1b0e4a7c35) (task 7e2f8a1c3d5b4e6f9a0c2b4d6e8f1a73).
+
+=== CloudWatch Logs: /ecs/prod/payments-api  (task 0c1d5e9a7b3f4a2e8c6d9f1b0e4a7c35) ===
+[2026-10-26 09:14:03 +0000] [1] [INFO] Starting gunicorn 22.0.0
+[2026-10-26 09:14:03 +0000] [1] [INFO] Listening at: http://0.0.0.0:8000 (1)
+[2026-10-26 09:14:03 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker
+[2026-10-26 09:14:03 +0000] [7] [INFO] Booting worker with pid: 7
+2026-10-26 09:14:04,112 INFO payments.config: payments-api 3.8.0 (git 4e1b9c2) loading settings, APP_ENV=production
+2026-10-26 09:14:04,113 INFO payments.config: DATABASE_URL set, REDIS_URL set, SENTRY_DSN set
+[2026-10-26 09:14:04 +0000] [7] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/gunicorn/arbiter.py", line 609, in spawn_worker
+    worker.init_process()
+  File "/usr/local/lib/python3.12/site-packages/uvicorn/workers.py", line 75, in init_process
+    super().init_process()
+  File "/usr/local/lib/python3.12/site-packages/gunicorn/workers/base.py", line 134, in init_process
+    self.load_wsgi()
+  File "/usr/local/lib/python3.12/site-packages/gunicorn/workers/base.py", line 146, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 58, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 48, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/gunicorn/util.py", line 371, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/app/payments/main.py", line 9, in <module>
+    from payments.config import settings
+  File "/app/payments/config.py", line 31, in <module>
+    settings = Settings()
+               ^^^^^^^^^^
+  File "/app/payments/config.py", line 24, in __init__
+    self.webhook_signing_secret = os.environ["WEBHOOK_SIGNING_SECRET"]
+                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 714, in __getitem__
+KeyError: 'WEBHOOK_SIGNING_SECRET'
+[2026-10-26 09:14:04 +0000] [7] [INFO] Worker exiting (pid: 7)
+[2026-10-26 09:14:04 +0000] [1] [ERROR] Worker (pid:7) exited with code 3
+[2026-10-26 09:14:04 +0000] [1] [ERROR] Shutting down: Master
+[2026-10-26 09:14:04 +0000] [1] [ERROR] Reason: Worker failed to boot.
+
+=== aws ecs describe-tasks (task 0c1d5e9a7b3f4a2e8c6d9f1b0e4a7c35) ===
+  "stoppedReason": "Essential container in task exited",
+  "containers": [ { "name": "payments-api", "exitCode": 3 } ]
+
+=== ECS service events (continued) ===
+2026-10-26T09:14:21Z  (service payments-api) has stopped 2 running tasks: (task 0c1d5e9a7b3f4a2e8c6d9f1b0e4a7c35) (task 7e2f8a1c3d5b4e6f9a0c2b4d6e8f1a73).
+2026-10-26T09:14:35Z  (service payments-api) has started 2 tasks: (task b5d1e7f3a9c24b0e8d6f2a4c1e3b5d97) (task 2a4c6e8f0b1d4f3a5c7e9b0d2f4a6c81).
+2026-10-26T09:15:02Z  (service payments-api) has stopped 2 running tasks: (task b5d1e7f3a9c24b0e8d6f2a4c1e3b5d97) (task 2a4c6e8f0b1d4f3a5c7e9b0d2f4a6c81).
+2026-10-26T09:21:47Z  (service payments-api) (deployment ecs-svc/8812450937115602291) deployment failed: tasks failed to start.
+2026-10-26T09:21:48Z  (service payments-api) rolling back to deployment ecs-svc/4417709251863390154 (task definition payments-api:41).
+2026-10-26T09:23:10Z  (service payments-api) has reached a steady state.
+
+=== Task definition diff: payments-api:41 -> payments-api:42 ===
+  image:  payments-api:3.7.2  ->  payments-api:3.8.0
+  environment:  (unchanged) APP_ENV, LOG_LEVEL
+  secrets:      (unchanged) DATABASE_URL, REDIS_URL, SENTRY_DSN  <- from arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/payments-api

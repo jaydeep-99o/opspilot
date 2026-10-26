@@ -1,0 +1,50 @@
+=== CloudWatch alarms ===
+2026-10-26T18:41:30Z  ALARM  "checkout-web-healthy-hosts"  HealthyHostCount < 1 for 2 datapoints (value: 0) on target group tg-checkout-web
+2026-10-26T18:42:00Z  ALARM  "prod-public-alb-5xx"  HTTPCode_ELB_5XX_Count > 100 for 1 datapoint (value: 3,914)
+
+=== aws elbv2 describe-target-groups (tg-checkout-web) ===
+  "Protocol": "HTTP", "Port": 8080,
+  "HealthCheckPath": "/health", "HealthCheckPort": "traffic-port",
+  "HealthCheckIntervalSeconds": 15, "HealthCheckTimeoutSeconds": 5,
+  "HealthyThresholdCount": 3, "UnhealthyThresholdCount": 2,
+  "Matcher": { "HttpCode": "200" }
+
+=== aws elbv2 describe-target-health (tg-checkout-web) ===
+{
+  "TargetHealthDescriptions": [
+    { "Target": { "Id": "10.0.12.47", "Port": 8080 },
+      "TargetHealth": { "State": "unhealthy", "Reason": "Target.ResponseCodeMismatch",
+                        "Description": "Health checks failed with these codes: [404]" } },
+    { "Target": { "Id": "10.0.14.211", "Port": 8080 },
+      "TargetHealth": { "State": "unhealthy", "Reason": "Target.ResponseCodeMismatch",
+                        "Description": "Health checks failed with these codes: [404]" } },
+    { "Target": { "Id": "10.0.13.98", "Port": 8080 },
+      "TargetHealth": { "State": "draining", "Reason": "Target.DeregistrationInProgress",
+                        "Description": "Target deregistration is in progress" } }
+  ]
+}
+
+=== CloudWatch Logs: /ecs/prod/checkout-web  (task def checkout-web:57, image checkout-web:5.2.0) ===
+2026-10-26T18:40:01.982Z  INFO  checkout-web 5.2.0 starting (node v20.17.0, NODE_ENV=production)
+2026-10-26T18:40:02.114Z  INFO  Server listening on 0.0.0.0:8080
+2026-10-26T18:40:02.115Z  INFO  Routes: GET /api/cart, POST /api/cart/items, POST /api/checkout, GET /healthz, GET /readyz
+2026-10-26T18:40:02.390Z  INFO  Connected to Postgres (checkout-db.cluster-c9xq2ab1.us-east-1.rds.amazonaws.com) pool=10
+2026-10-26T18:40:02.402Z  INFO  Connected to Redis (checkout-cache.abc123.use1.cache.amazonaws.com:6379)
+2026-10-26T18:40:09.551Z  10.0.1.23  "GET /health HTTP/1.1" 404 19 "-" "ELB-HealthChecker/2.0" 1.2ms
+2026-10-26T18:40:09.902Z  10.0.2.61  "GET /health HTTP/1.1" 404 19 "-" "ELB-HealthChecker/2.0" 0.9ms
+2026-10-26T18:40:24.553Z  10.0.1.23  "GET /health HTTP/1.1" 404 19 "-" "ELB-HealthChecker/2.0" 1.1ms
+2026-10-26T18:40:24.907Z  10.0.2.61  "GET /health HTTP/1.1" 404 19 "-" "ELB-HealthChecker/2.0" 1.0ms
+2026-10-26T18:40:31.004Z  10.0.1.23  "GET /api/cart HTTP/1.1" 200 1843 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" 38.4ms
+2026-10-26T18:40:39.558Z  10.0.1.23  "GET /health HTTP/1.1" 404 19 "-" "ELB-HealthChecker/2.0" 1.3ms
+
+=== ECS service events: prod-web / checkout-web (oldest first) ===
+2026-10-26T18:39:44Z  (service checkout-web) updated desired task definition to checkout-web:57 (image checkout-web:5.2.0, previous checkout-web:56 / 5.1.4).
+2026-10-26T18:40:55Z  (service checkout-web) (port 8080) is unhealthy in (target-group arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/tg-checkout-web/6d0ecf831eec9f09) due to (reason Health checks failed with these codes: [404]).
+2026-10-26T18:41:02Z  (service checkout-web) has stopped 2 running tasks: (task 4d7e9f1a3c5b4a6e8f0d2c4b6a8e0f13) (task c3e5a7f9b1d24c6e8a0f2d4b6c8e1a59).
+2026-10-26T18:41:02Z  Task 4d7e9f1a3c5b4a6e8f0d2c4b6a8e0f13 stopped reason: Task failed ELB health checks in (target-group arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/tg-checkout-web/6d0ecf831eec9f09)
+2026-10-26T18:41:20Z  (service checkout-web) has started 2 tasks: (task 8f0a2c4e6b1d4e3f5a7c9e1b3d5f7a92) (task e1b3d5f7a9c04e2b6d8f0a2c4e6b8d14).
+2026-10-26T18:41:21Z  (service checkout-web) deregistered 1 targets in (target-group tg-checkout-web) (old task from checkout-web:56)
+
+=== ALB access log sample (app/prod-public-alb) ===
+h2 2026-10-26T18:42:31.004118Z app/prod-public-alb/50dc6c495c0c9188 203.0.113.48:51234 - -1 -1 -1 503 - 512 162 "GET https://shop.example.com:443/api/cart HTTP/2.0" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6)" ECDHE-RSA-AES128-GCM-SHA256 TLSv1.2 arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/tg-checkout-web/6d0ecf831eec9f09 "Root=1-671d3b17-4c1e2f9a0b8d7e6c5a4f3b21" "shop.example.com" "-" 10 2026-10-26T18:42:31.003000Z "forward" "-" "-" "-" "-" "-" "-"
+h2 2026-10-26T18:42:31.211730Z app/prod-public-alb/50dc6c495c0c9188 198.51.100.17:60412 - -1 -1 -1 503 - 734 162 "POST https://shop.example.com:443/api/checkout HTTP/2.0" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)" ECDHE-RSA-AES128-GCM-SHA256 TLSv1.2 arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/tg-checkout-web/6d0ecf831eec9f09 "Root=1-671d3b17-9e8d7c6b5a4f3e2d1c0b9a87" "shop.example.com" "-" 10 2026-10-26T18:42:31.210000Z "forward" "-" "-" "-" "-" "-" "-"

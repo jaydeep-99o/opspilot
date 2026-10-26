@@ -1,0 +1,50 @@
+=== CloudWatch Logs: /ecs/prod/order-processor  (task 3f9c2a71e5b84d0c9a1e6f2b7d4c8e10) ===
+2026-10-26T14:02:09.871Z  INFO  [main] c.a.o.OrderProcessorApplication : Starting OrderProcessorApplication v2.14.3 using Java 17.0.12 with PID 1
+2026-10-26T14:02:09.874Z  INFO  [main] c.a.o.OrderProcessorApplication : JVM arguments: [-Xms512m, -Xmx1536m, -XX:+UseG1GC, -Xlog:gc:stdout]
+2026-10-26T14:02:13.402Z  INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer : Tomcat started on port 8080 (http) with context path '/'
+2026-10-26T14:02:13.419Z  INFO  [main] c.a.o.OrderProcessorApplication : Started OrderProcessorApplication in 3.9 seconds
+2026-10-26T14:15:00.004Z  INFO  [scheduling-1] c.a.o.export.InvoiceBatchExporter : Starting hourly invoice export for window 2026-10-26T13:00Z..14:00Z
+2026-10-26T14:15:41.226Z  INFO  [scheduling-1] c.a.o.export.InvoiceBatchExporter : Export complete: 61,877 invoices, 212 MB written to s3://prod-order-exports/2026/10/26/13.csv.gz
+2026-10-26T14:30:00.003Z  INFO  [scheduling-1] c.a.o.export.InvoiceBatchExporter : Starting hourly invoice export for window 2026-10-26T13:00Z..14:30Z (catch-up: previous run marked partial)
+2026-10-26T14:31:47.903Z  WARN  [scheduling-1] c.a.o.export.InvoiceBatchExporter : Loaded 184,302 invoices into memory for export (findAllByWindow, no pagination)
+[2026-10-26T14:31:52.118Z][gc] GC(398) Pause Young (Normal) (G1 Evacuation Pause) 812M->790M(1024M) 98.412ms
+[2026-10-26T14:32:03.551Z][gc] GC(405) Pause Young (Normal) (G1 Evacuation Pause) 958M->941M(1180M) 187.003ms
+[2026-10-26T14:32:19.774Z][gc] GC(412) Pause Young (Normal) (G1 Evacuation Pause) 1088M->1071M(1312M) 342.551ms
+2026-10-26T14:32:21.010Z  WARN  [http-nio-8080-exec-7] c.a.o.api.OrderController : Slow request POST /orders took 4,812 ms
+[2026-10-26T14:32:31.302Z][gc] GC(417) Pause Young (Concurrent Start) (G1 Humongous Allocation) 1190M->1176M(1408M) 512.880ms
+2026-10-26T14:32:33.640Z  WARN  [http-nio-8080-exec-2] c.a.o.api.OrderController : Slow request POST /orders took 7,034 ms
+[2026-10-26T14:32:36.915Z][gc] GC(419) Pause Young (Normal) (G1 Evacuation Pause) 1241M->1229M(1472M) 611.209ms
+(log stream ends here; no shutdown message was written)
+
+=== aws ecs describe-tasks --cluster prod-core --tasks 3f9c2a71e5b84d0c9a1e6f2b7d4c8e10 ===
+{
+  "taskArn": "arn:aws:ecs:us-east-1:123456789012:task/prod-core/3f9c2a71e5b84d0c9a1e6f2b7d4c8e10",
+  "taskDefinitionArn": "arn:aws:ecs:us-east-1:123456789012:task-definition/order-processor:31",
+  "lastStatus": "STOPPED",
+  "launchType": "FARGATE",
+  "cpu": "512",
+  "memory": "1024",
+  "stopCode": "EssentialContainerExited",
+  "stoppedReason": "Essential container in task exited",
+  "startedAt": "2026-10-26T14:02:05.214Z",
+  "stoppedAt": "2026-10-26T14:32:38.002Z",
+  "containers": [
+    {
+      "name": "order-processor",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/order-processor:2.14.3",
+      "lastStatus": "STOPPED",
+      "exitCode": 137,
+      "reason": "OutOfMemoryError: Container killed due to memory usage"
+    }
+  ]
+}
+
+=== ECS service events: prod-core / order-processor (newest first) ===
+2026-10-26T14:33:20Z  (service order-processor) has reached a steady state.
+2026-10-26T14:32:51Z  (service order-processor) has started 1 tasks: (task 9b04de1f6a2c4c7e8d35a0f1e2b6c913).
+2026-10-26T14:32:40Z  (service order-processor) has stopped 1 running tasks: (task 3f9c2a71e5b84d0c9a1e6f2b7d4c8e10).
+2026-10-26T13:46:12Z  (service order-processor) has stopped 1 running tasks: (task 51c7e2a09d8b4f3e86a2c4d1f0b7e5a2). Reason: OutOfMemoryError: Container killed due to memory usage
+2026-10-26T13:01:58Z  (service order-processor) has stopped 1 running tasks: (task e8a3b6c2f1d04e79a5c8b2d7f6e1a4c0). Reason: OutOfMemoryError: Container killed due to memory usage
+
+=== CloudWatch alarm ===
+2026-10-26T14:32:55Z  ALARM  "order-processor-5xx-rate"  HTTPCode_Target_5XX_Count > 50 for 1 datapoint (value: 214) on target group tg-order-processor

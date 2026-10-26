@@ -1,0 +1,2 @@
+openai>=1.40        # OpenAI-compatible client, pointed at Nebius via base_url
+python-dotenv>=1.0  # loads .env for local runs only (Lambda won't need it)
