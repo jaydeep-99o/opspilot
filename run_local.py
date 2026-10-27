@@ -32,6 +32,11 @@ def main() -> int:
                         help="list the Nemotron model IDs available on your Nebius account")
     args = parser.parse_args()
 
+    # Model output can contain characters such as non-breaking hyphens, which Windows' default
+    # cp1252 encoding can't print when output is piped or redirected. UTF-8 handles them all.
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
     # Local only: copies .env into os.environ. In Lambda the same variables come from the
     # function configuration, which is why diagnose.py never loads .env itself.
     load_dotenv()
