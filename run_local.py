@@ -62,6 +62,15 @@ def print_report(path: Path, result: dict) -> None:
         print(textwrap.fill(text, WIDTH, initial_indent=f"{label:<12}",
                             subsequent_indent=" " * 12))
 
+    def section(title: str, items: list[str], numbered: bool = False) -> None:
+        print(f"\n{title}")
+        for number, item in enumerate(items, start=1):
+            marker = f"{number}. " if numbered else "- "
+            # Never split words: ARNs and CLI commands must stay intact for copy-paste.
+            print(textwrap.fill(item, WIDTH, initial_indent=f"  {marker}",
+                                subsequent_indent=" " * (2 + len(marker)),
+                                break_on_hyphens=False, break_long_words=False))
+
     print(f"\nOpsPilot diagnosis: {path.name}")
     print("=" * WIDTH)
     field("Summary", result["summary"])
@@ -70,10 +79,9 @@ def print_report(path: Path, result: dict) -> None:
     field("Confidence", f"{result['confidence']:.0%}")
     print()
     field("Root cause", result["root_cause"])
-    print("\nFix steps")
-    for number, step in enumerate(result["fix_steps"], start=1):
-        print(textwrap.fill(step, WIDTH, initial_indent=f"  {number}. ",
-                            subsequent_indent="     "))
+    section("Evidence from the logs", result["evidence"])
+    section("Fix steps", result["fix_steps"], numbered=True)
+    section("Prevention", result["prevention"])
     print()
 
 
