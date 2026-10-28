@@ -44,6 +44,8 @@ containing exactly these keys:
   "prevention": array of 1-3 strings, changes that stop this kind of incident recurring,
   "summary": string, one line an on-call engineer can read in five seconds
 }
+Only use names, IDs, versions and values that appear in the logs. For anything you don't know,
+write a placeholder such as <cluster-name> or <previous-revision>; never invent one.
 
 Severity is about the impact right now, after any automatic recovery:
 - critical: users cannot use the service, e.g. zero healthy targets, load balancer 5xx on most

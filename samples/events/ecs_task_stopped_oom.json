@@ -1,0 +1,36 @@
+{
+  "version": "0",
+  "id": "6a7e8feb-b491-4cf7-a9f1-bf3703467718",
+  "detail-type": "ECS Task State Change",
+  "source": "aws.ecs",
+  "account": "123456789012",
+  "time": "2026-10-28T10:04:03Z",
+  "region": "ap-south-1",
+  "resources": ["arn:aws:ecs:ap-south-1:123456789012:task/opspilot-demo/3b9f0c2e7d4a4f1e9c8b6a5d4e3f2a1b"],
+  "detail": {
+    "clusterArn": "arn:aws:ecs:ap-south-1:123456789012:cluster/opspilot-demo",
+    "taskArn": "arn:aws:ecs:ap-south-1:123456789012:task/opspilot-demo/3b9f0c2e7d4a4f1e9c8b6a5d4e3f2a1b",
+    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:123456789012:task-definition/orders-api:3",
+    "group": "service:orders-api",
+    "launchType": "FARGATE",
+    "cpu": "256",
+    "memory": "512",
+    "lastStatus": "STOPPED",
+    "desiredStatus": "STOPPED",
+    "stopCode": "EssentialContainerExited",
+    "stoppedReason": "Essential container in task exited",
+    "startedAt": "2026-10-28T10:03:50.115Z",
+    "stoppingAt": "2026-10-28T10:04:02.981Z",
+    "stoppedAt": "2026-10-28T10:04:03.410Z",
+    "containers": [
+      {
+        "containerArn": "arn:aws:ecs:ap-south-1:123456789012:container/opspilot-demo/3b9f0c2e7d4a4f1e9c8b6a5d4e3f2a1b/1f2e3d4c-5b6a-4789-8a9b-0c1d2e3f4a5b",
+        "name": "orders-api",
+        "lastStatus": "STOPPED",
+        "exitCode": 137,
+        "reason": "OutOfMemoryError: Container killed due to memory usage",
+        "memory": "256"
+      }
+    ]
+  }
+}

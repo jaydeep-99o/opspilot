@@ -1,0 +1,34 @@
+{
+  "version": "0",
+  "id": "a3f1e9c7-5b2d-4e8a-b6c4-1d9f7e3a5c2b",
+  "detail-type": "ECS Task State Change",
+  "source": "aws.ecs",
+  "account": "123456789012",
+  "time": "2026-10-28T10:05:02Z",
+  "region": "ap-south-1",
+  "resources": ["arn:aws:ecs:ap-south-1:123456789012:task/opspilot-demo/5e2a8c1f4b7d4a9e8c3f6b0d2a5e7c91"],
+  "detail": {
+    "clusterArn": "arn:aws:ecs:ap-south-1:123456789012:cluster/opspilot-demo",
+    "taskArn": "arn:aws:ecs:ap-south-1:123456789012:task/opspilot-demo/5e2a8c1f4b7d4a9e8c3f6b0d2a5e7c91",
+    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:123456789012:task-definition/orders-api:5",
+    "group": "service:orders-api",
+    "launchType": "FARGATE",
+    "cpu": "256",
+    "memory": "512",
+    "lastStatus": "STOPPED",
+    "desiredStatus": "STOPPED",
+    "stopCode": "ServiceSchedulerInitiated",
+    "stoppedReason": "Task failed ELB health checks in (target-group arn:aws:elasticloadbalancing:ap-south-1:123456789012:targetgroup/orders-api-tg/4f1a2b3c4d5e6f70)",
+    "startedAt": "2026-10-28T10:04:33.540Z",
+    "stoppingAt": "2026-10-28T10:04:56.212Z",
+    "stoppedAt": "2026-10-28T10:05:01.866Z",
+    "containers": [
+      {
+        "containerArn": "arn:aws:ecs:ap-south-1:123456789012:container/opspilot-demo/5e2a8c1f4b7d4a9e8c3f6b0d2a5e7c91/2c4e6a8b-1d3f-4b5a-9c7e-0f2a4c6e8b1d",
+        "name": "orders-api",
+        "lastStatus": "STOPPED",
+        "exitCode": 0
+      }
+    ]
+  }
+}

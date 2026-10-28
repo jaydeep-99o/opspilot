@@ -59,14 +59,53 @@ Both models found the right root cause each time. Super also ranked severity cor
 more precise evidence, and gave runnable AWS CLI fixes, so OpsPilot uses
 `nvidia/nemotron-3-super-120b-a12b`. Switching models only means changing `NEBIUS_MODEL`.
 
+## Steps 3–4: the Lambda and the Slack alert
+
+`opspilot/handler.py` is the AWS Lambda (handler `opspilot.handler.lambda_handler`). Two things trigger it:
+
+- an EventBridge rule for ECS tasks that stop unexpectedly (OOM kill, crash, failed health checks)
+- a CloudWatch alarm delivered through SNS (for example, too many 5xx responses)
+
+For each incident, the Lambda does four things:
+
+1. Reads the stopped task's recent CloudWatch logs (or the whole service's, for alarms).
+2. Puts what AWS reported (stop reason, exit code, alarm reason) in front of those logs.
+3. Asks Nemotron for a diagnosis.
+4. Posts the diagnosis to Slack, colour-coded by severity, with a link to the logs.
+
+Deploys, scale-ins and alarms going back to OK are ignored. A crash loop is posted only once
+every 10 minutes. If the diagnosis fails, Slack still gets what AWS reported. The Nebius key and
+Slack webhook come from SSM Parameter Store.
+
+Try it locally with the sample AWS events and real logs from the demo app; no AWS account is needed:
+
+```powershell
+python run_lambda_local.py samples/events/ecs_task_stopped_oom.json samples/docker/oom.log
+python run_lambda_local.py samples/events/alarm_5xx_sns.json samples/docker/errors.log
+# to send it to Slack, put SLACK_WEBHOOK_URL in .env and add --post
+```
+
+Run the tests (they never call the real API):
+
+```powershell
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
 ## Project layout
 
 | Path | What it does |
 | --- | --- |
 | `opspilot/diagnose.py` | `diagnose(logs) -> dict`: prompts the model, extracts and validates the JSON, checks evidence quotes against the logs, retries once if invalid. Reads config only from environment variables, so it can be reused as-is in AWS Lambda. |
+| `opspilot/events.py` | Turns ECS task-stopped events and CloudWatch alarms (direct or via SNS) into incidents; ignores deploys and OK alarms. |
+| `opspilot/logs.py` | Reads the incident's log lines from CloudWatch Logs and builds the console link. |
+| `opspilot/slack.py` | Formats the diagnosis as a Slack message and posts it to an incoming webhook. |
+| `opspilot/handler.py` | The Lambda: event → logs → diagnosis → Slack, with secrets from SSM and crash-loop de-duplication. |
 | `run_local.py` | Local runner: loads `.env`, diagnoses a log file and pretty-prints the result. |
+| `run_lambda_local.py` | Runs the Lambda handler locally on a sample event, with a log file standing in for CloudWatch. |
+| `tests/` | pytest suite for event parsing, Slack formatting, the handler and `diagnose()`, using fakes instead of AWS and the model. |
 | `compare_models.py` | Runs every sample through several models and reports severity, time, tokens and cost. |
-| `samples/` | Realistic incidents: ECS task OOM-killed, Python app missing an env var, failing ALB health check. |
+| `samples/` | Realistic incidents: ECS task OOM-killed, Python app missing an env var, failing ALB health check. `samples/events/` holds sample AWS events and `samples/docker/` real logs from each demo-app failure mode. |
 | `demo-app/` | `orders-api`, a small FastAPI service with `FAIL_MODE` switches (oom, missing_env, bad_health, errors) that cause real incidents. See its [README](demo-app/README.md). |
 | `.env.example` | Template for `NEBIUS_API_KEY`, `NEBIUS_BASE_URL`, `NEBIUS_MODEL`. Copy it to `.env` (which is git-ignored). |
 

@@ -1,0 +1,34 @@
+{
+  "version": "0",
+  "id": "0d5c3b7a-2e41-4f8b-9c6d-7a1e2f3b4c5d",
+  "detail-type": "ECS Task State Change",
+  "source": "aws.ecs",
+  "account": "123456789012",
+  "time": "2026-10-28T10:04:21Z",
+  "region": "ap-south-1",
+  "resources": ["arn:aws:ecs:ap-south-1:123456789012:task/opspilot-demo/9c1d4e7f2a5b4c8d9e0f1a2b3c4d5e6f"],
+  "detail": {
+    "clusterArn": "arn:aws:ecs:ap-south-1:123456789012:cluster/opspilot-demo",
+    "taskArn": "arn:aws:ecs:ap-south-1:123456789012:task/opspilot-demo/9c1d4e7f2a5b4c8d9e0f1a2b3c4d5e6f",
+    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:123456789012:task-definition/orders-api:4",
+    "group": "service:orders-api",
+    "launchType": "FARGATE",
+    "cpu": "256",
+    "memory": "512",
+    "lastStatus": "STOPPED",
+    "desiredStatus": "STOPPED",
+    "stopCode": "EssentialContainerExited",
+    "stoppedReason": "Essential container in task exited",
+    "startedAt": "2026-10-28T10:04:18.902Z",
+    "stoppingAt": "2026-10-28T10:04:20.114Z",
+    "stoppedAt": "2026-10-28T10:04:21.377Z",
+    "containers": [
+      {
+        "containerArn": "arn:aws:ecs:ap-south-1:123456789012:container/opspilot-demo/9c1d4e7f2a5b4c8d9e0f1a2b3c4d5e6f/7e6d5c4b-3a29-4180-9f8e-7d6c5b4a3928",
+        "name": "orders-api",
+        "lastStatus": "STOPPED",
+        "exitCode": 3
+      }
+    ]
+  }
+}
