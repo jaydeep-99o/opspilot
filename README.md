@@ -67,6 +67,7 @@ more precise evidence, and gave runnable AWS CLI fixes, so OpsPilot uses
 | `run_local.py` | Local runner: loads `.env`, diagnoses a log file and pretty-prints the result. |
 | `compare_models.py` | Runs every sample through several models and reports severity, time, tokens and cost. |
 | `samples/` | Realistic incidents: ECS task OOM-killed, Python app missing an env var, failing ALB health check. |
+| `demo-app/` | `orders-api`, a small FastAPI service with `FAIL_MODE` switches (oom, missing_env, bad_health, errors) that cause real incidents. See its [README](demo-app/README.md). |
 | `.env.example` | Template for `NEBIUS_API_KEY`, `NEBIUS_BASE_URL`, `NEBIUS_MODEL`. Copy it to `.env` (which is git-ignored). |
 
 ## License
