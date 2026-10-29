@@ -1,0 +1,9 @@
+# Never bake secrets into the image; docker-compose passes .env at run time.
+.env
+.git/
+.venv/
+**/__pycache__/
+demo-app/
+samples/
+tests/
+comparison.json

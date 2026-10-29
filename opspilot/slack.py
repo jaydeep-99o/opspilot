@@ -37,7 +37,7 @@ def build_failure_message(incident, error: str, logs_url: str | None = None) -> 
     title = f"⚠️ OpsPilot could not diagnose: {incident.title}"
     blocks = [
         _header(title),
-        _section("*What AWS reported*\n" + _code(incident.trigger)),
+        _section("*What was reported*\n" + _code(incident.trigger)),
         _section("*Why the diagnosis failed*\n" + _escape(error)),
     ]
     if logs_url:

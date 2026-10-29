@@ -1,0 +1,48 @@
+# OpsPilot running locally for free: the demo app, some traffic, and the watcher.
+#
+#   docker compose up -d --build                     # everything healthy
+#   $env:FAIL_MODE="oom"; docker compose up -d       # break the app (oom, missing_env, bad_health, errors)
+#   docker compose logs -f opspilot                  # watch OpsPilot diagnose it and post to Slack
+#   $env:FAIL_MODE=""; docker compose up -d          # back to normal
+#   docker compose down                              # stop everything
+
+services:
+  orders-api:
+    build: ./demo-app
+    image: orders-api
+    container_name: orders-api   # the name OpsPilot's Slack alerts show
+    environment:
+      FAIL_MODE: ${FAIL_MODE:-}
+    ports:
+      - "8081:8080"
+    labels:
+      opspilot.watch: "true"     # only labelled containers are watched
+    mem_limit: 256m              # memory limit, like task memory on ECS
+    memswap_limit: 256m          # same value: no swap, so OOM really kills the container
+    depends_on:
+      opspilot:
+        condition: service_healthy   # start only once the watcher is listening
+
+  traffic:
+    # One request per second, so the "errors" mode produces failing requests by itself.
+    image: python:3.12-slim
+    command:
+      - python
+      - -c
+      - |
+        import time, urllib.request
+        while True:
+            try:
+                urllib.request.urlopen("http://orders-api:8080/orders", timeout=5).read()
+            except Exception:
+                pass
+            time.sleep(1)
+    depends_on:
+      - orders-api
+
+  opspilot:
+    build: .
+    image: opspilot-watcher
+    env_file: .env               # NEBIUS_API_KEY, NEBIUS_BASE_URL, NEBIUS_MODEL, SLACK_WEBHOOK_URL
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # read Docker events and container logs

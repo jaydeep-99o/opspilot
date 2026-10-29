@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from opspilot import handler
+from opspilot import handler, pipeline
 from opspilot.diagnose import DiagnosisError
 
 EVENTS = Path(__file__).parent.parent / "samples" / "events"
@@ -26,7 +26,7 @@ class FakeLogs:
 
 @pytest.fixture(autouse=True)
 def clean_state(monkeypatch):
-    handler._recently_diagnosed.clear()
+    pipeline._recently_diagnosed.clear()
     monkeypatch.delenv("LOG_GROUP", raising=False)
 
 
@@ -36,7 +36,7 @@ def event(name: str) -> dict:
 
 def test_diagnoses_with_trigger_and_logs_then_posts(monkeypatch):
     seen = []
-    monkeypatch.setattr(handler, "diagnose", lambda text: seen.append(text) or DIAGNOSIS)
+    monkeypatch.setattr(pipeline, "diagnose", lambda text: seen.append(text) or DIAGNOSIS)
     posted, logs = [], FakeLogs(['{"message": "Cached order history batch", "rss_mb": 249}'])
 
     [result] = handler.handle(event("ecs_task_stopped_oom.json"), logs, posted.append)
@@ -50,7 +50,7 @@ def test_diagnoses_with_trigger_and_logs_then_posts(monkeypatch):
 
 
 def test_crash_loop_is_posted_once(monkeypatch):
-    monkeypatch.setattr(handler, "diagnose", lambda text: DIAGNOSIS)
+    monkeypatch.setattr(pipeline, "diagnose", lambda text: DIAGNOSIS)
     posted = []
     handler.handle(event("ecs_task_stopped_oom.json"), FakeLogs(["line"]), posted.append)
     [repeat] = handler.handle(event("ecs_task_stopped_oom.json"), FakeLogs(["line"]), posted.append)
@@ -61,7 +61,7 @@ def test_failed_diagnosis_still_posts_what_aws_reported(monkeypatch):
     def broken(text):
         raise DiagnosisError("invalid response after 2 attempts")
 
-    monkeypatch.setattr(handler, "diagnose", broken)
+    monkeypatch.setattr(pipeline, "diagnose", broken)
     posted = []
     [result] = handler.handle(event("ecs_task_stopped_missing_env.json"), FakeLogs(["line"]), posted.append)
     assert result["status"] == "diagnosis_failed"
@@ -69,7 +69,7 @@ def test_failed_diagnosis_still_posts_what_aws_reported(monkeypatch):
 
 
 def test_reads_whole_group_when_task_stream_is_empty(monkeypatch):
-    monkeypatch.setattr(handler, "diagnose", lambda text: DIAGNOSIS)
+    monkeypatch.setattr(pipeline, "diagnose", lambda text: DIAGNOSIS)
     logs = FakeLogs(["from the group"], stream_lines=[])
     handler.handle(event("ecs_task_stopped_bad_health.json"), logs, lambda message: None)
     assert "logStreamNames" in logs.calls[0] and "logStreamNames" not in logs.calls[1]
@@ -78,7 +78,7 @@ def test_reads_whole_group_when_task_stream_is_empty(monkeypatch):
 def test_alarm_uses_configured_log_group_and_keeps_newest_logs(monkeypatch):
     monkeypatch.setenv("LOG_GROUP", "/ecs/orders-api")
     seen = []
-    monkeypatch.setattr(handler, "diagnose", lambda text: seen.append(text) or DIAGNOSIS)
+    monkeypatch.setattr(pipeline, "diagnose", lambda text: seen.append(text) or DIAGNOSIS)
     lines = [f"old line {n:05d} " + "." * 80 for n in range(400)] + ["NEWEST LINE"]
     handler.handle(event("alarm_5xx_sns.json"), FakeLogs(lines), lambda message: None)
     assert "NEWEST LINE" in seen[0] and "old line 00000" not in seen[0]
